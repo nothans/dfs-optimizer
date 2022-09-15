@@ -1,1 +1,1 @@
-# fantasy-football-optimizer
+# DFS Optimizer
