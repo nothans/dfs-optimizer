@@ -25,6 +25,8 @@ You might have MATLAB installed on your computer, so all you have to do is open 
 - -Change the *salaryCap* variable to the salary cap to optimize for. 50,000 to 60,000 is a common range.
 -   Click the *Run* button on the Live Editor tab
 
+![Optimal DFS lineup using MATLAB](https://raw.githubusercontent.com/nothans/dfs-optimizer/main/optimal_dfs.jpg)
+
 ## Resources
 
 -   Full Tutorial - https://nothans.com/win-at-dfs-by-optimizing-your-fantasy-football-lineups
