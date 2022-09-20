@@ -1,3 +1,5 @@
+[![View DFS Fantasy Football Lineup Optimizer on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/117835-dfs-fantasy-football-lineup-optimizer)
+
 # DFS Optimizer
 
 ## Download Projection Data
