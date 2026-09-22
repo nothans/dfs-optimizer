@@ -45,6 +45,7 @@ arguments
     opts.SalaryCap (1,1) double = NaN
     opts.MinSalary (1,1) double = 0
     opts.MaxPerTeam (1,1) double = NaN
+    opts.MaxFromGame (1,1) double {mustBePositive} = Inf
     opts.Objective = "Projection"
     opts.OwnershipWeight (1,1) double {mustBeNonnegative} = 0
     opts.Lock (1,:) string = strings(1, 0)

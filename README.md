@@ -16,7 +16,7 @@ Load a projections CSV, set the levers (site, salary, stacks, ownership, exposur
 - **Monte Carlo**: re-solve under sampled projections and see which players are optimal in most scenarios, not just at the point estimate.
 - **An explorer app** (`DFSOptimizerApp`) with cash and GPP presets, a lock/exclude player pool, exposure versus field ownership, and a "copy as code" button that turns your settings into a script.
 - **A pure function library** (`+dfs`) that does everything the app does from a script, a test, or a coding agent.
-- **Tests** (22 of them) that check every constraint independently of the solver.
+- **Tests** (23 of them) that check every constraint independently of the solver.
 
 ## Quick start
 
@@ -46,6 +46,9 @@ Requires MATLAB R2021a or later and Optimization Toolbox. Works in MATLAB Online
    `first_name, last_name, position, injury_status, week, game_date, slate, team, opp, spread, over_under, implied_team_score, salary, L5_dvp_rank, L5_fppg_avg, L10_fppg_avg, szn_fppg_avg, ppg_projection, value_projection, ownership_projection`
 
 3. Load it: `players = dfs.loadProjections("DFF_NFL_cheatsheet.csv")`.
+
+The Download CSV button exports the rows currently shown in the table, so clear any position or injury filters, pick the full slate, and let the table finish loading first.
+A good export has a few hundred rows; an export with a handful of rows all marked `O` will load as an empty pool, and the loader says so.
 
 The loader also understands DraftKings salary exports (`Name, Position, Salary, AvgPointsPerGame, TeamAbbrev, Game Info`) and hand-made sheets with columns like `Name, Pos, Team, Opp, Salary, Proj, Own`.
 Players marked out (`O`, `IR`, `D`) or projected at zero are dropped; every original column is kept on the table.
@@ -147,6 +150,7 @@ subject to  sum_i x_i = 9
             2 <= sum_{i in RB} x_i <= 3,  3 <= sum_{i in WR} x_i <= 4,  1 <= sum_{i in TE} x_i <= 2
             sum_i s_i x_i <= cap                       (and >= min salary)
             sum_{i in team t} x_i <= 4                 (FanDuel)
+            sum_{i in game j} x_i <= m                 (MaxFromGame, optional)
             g_j <= sum_{i in game j} x_i,  sum_j g_j >= 2     (DraftKings two-game rule)
             sum_{i in WR/TE of team(q)} x_i >= k * x_q    for every QB q   (stack of k)
             sum_{i in RB/WR/TE of opp(q)} x_i >= b * x_q  for every QB q   (bring-back of b)
@@ -186,7 +190,7 @@ The [MATLAB Agentic Toolkit](https://github.com/matlab/matlab-agentic-toolkit) c
 - "Load `data/sample_DFF_NFL.csv`, build 20 DraftKings GPP lineups with a 2-man stack and 40% max exposure, and tell me the five players where my exposure is furthest above projected ownership."
 - "Compare the cash lineup and the GPP lineup on this slate and explain, in points and ownership, what the stack costs."
 - "Run 200 Monte Carlo draws with lognormal volatility and list players optimal in over 30% of draws but projected under 10% ownership."
-- "Add a `MaxFromGame` option to `dfs.optimizeLineup` that caps players from one game, with a validator clause and a test."
+- "Add an option that caps salary spent on running backs, with a validator clause and a test, using the same pattern as `MaxFromGame`."
 - "The optimizer says infeasible with my locks. Find the conflicting constraint and propose the smallest change."
 
 The agent runs `runtests("tests")` through the MCP server and reports the numbers.
@@ -198,7 +202,7 @@ That loop, ask, run, verify, is the point: the optimizer is a set of checkable c
 runtests("tests")
 ```
 
-22 tests cover the loader (including a real Daily Fantasy Fuel header fixture), the site rules, every constraint in the optimizer (checked against the original 2022 solver-based formulation), the portfolio and Monte Carlo loops, the export format, and the app's public methods.
+23 tests cover the loader (including a real Daily Fantasy Fuel header fixture), the site rules, every constraint in the optimizer (checked against the original 2022 solver-based formulation), the portfolio and Monte Carlo loops, the export format, and the app's public methods.
 
 ## Files
 

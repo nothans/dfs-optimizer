@@ -14,6 +14,7 @@ function [lineup, info] = optimizeLineup(players, opts)
 %     SalaryCap        override the site's cap
 %     MinSalary        spend at least this much (default 0)
 %     MaxPerTeam       override the site's per-team cap
+%     MaxFromGame      cap on players from any one game (default Inf)
 %
 %   Objective
 %     Objective        column name to maximize (default "Projection"), or a
@@ -60,6 +61,7 @@ arguments
     opts.SalaryCap (1,1) double = NaN
     opts.MinSalary (1,1) double = 0
     opts.MaxPerTeam (1,1) double = NaN
+    opts.MaxFromGame (1,1) double {mustBePositive} = Inf
     opts.Objective = "Projection"
     opts.OwnershipWeight (1,1) double {mustBeNonnegative} = 0
     opts.Lock (1,:) string = strings(1, 0)
@@ -76,13 +78,17 @@ arguments
 end
 
 t0 = tic;
+if isfinite(opts.MaxFromGame) && (opts.MaxFromGame < 1 || opts.MaxFromGame ~= round(opts.MaxFromGame))
+    error("dfs:badOption", "MaxFromGame must be a positive integer, or Inf for no cap.");
+end
 rules = dfs.siteRules(opts.Site);
 if ~isnan(opts.SalaryCap), rules.SalaryCap = opts.SalaryCap; end
 if ~isnan(opts.MaxPerTeam), rules.MaxPerTeam = opts.MaxPerTeam; end
 
 n = height(players);
 if n == 0
-    error("dfs:emptyPool", "The player pool is empty.");
+    error("dfs:emptyPool", "The player pool is empty. If it came from dfs.loadProjections, " + ...
+        "the export was filtered to nothing; see that function's warning for why.");
 end
 pos = string(players.Position);
 team = string(players.Team);
@@ -150,8 +156,11 @@ if rules.MinTeams > 1
     prob.Constraints.minTeams = sum(tUsed) >= rules.MinTeams;
 end
 [games, ~, gameId] = unique(game);
+isGame = sparse(1:n, gameId, 1, n, numel(games));   % n x nGames
+if isfinite(opts.MaxFromGame) && opts.MaxFromGame < rules.RosterSize
+    prob.Constraints.maxFromGame = (isGame' * x) <= opts.MaxFromGame;
+end
 if rules.MinGames > 1
-    isGame = sparse(1:n, gameId, 1, n, numel(games));
     gUsed = optimvar("gUsed", numel(games), Type="integer", LowerBound=0, UpperBound=1);
     prob.Constraints.gameLink = gUsed <= isGame' * x;
     prob.Constraints.minGames = sum(gUsed) >= rules.MinGames;
@@ -215,7 +224,7 @@ lineup = players(selected, :);
 lineup = assignSlots(lineup, rules);
 
 % Independent audit of the solver's answer.
-[ok, problems] = dfs.validateLineup(lineup, rules, MinSalary=opts.MinSalary);
+[ok, problems] = dfs.validateLineup(lineup, rules, MinSalary=opts.MinSalary, MaxFromGame=opts.MaxFromGame);
 if ~ok
     error("dfs:invalidLineup", "Solver returned an illegal lineup:\n  %s", join(problems, newline + "  "));
 end

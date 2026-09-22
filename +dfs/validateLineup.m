@@ -10,12 +10,14 @@ function [ok, problems] = validateLineup(lineup, rules, opts)
 %
 %   Name-value options
 %     MinSalary   lineup must spend at least this much (default 0)
+%     MaxFromGame at most this many players from any one game (default Inf)
 %     Throw       error instead of returning false (default false)
 
 arguments
     lineup table
     rules = "DraftKings"
     opts.MinSalary (1,1) double = 0
+    opts.MaxFromGame (1,1) double = Inf
     opts.Throw (1,1) logical = false
 end
 
@@ -57,9 +59,15 @@ if numel(teams) < rules.MinTeams
     problems(end+1) = sprintf("Lineup spans %d teams, needs %d.", numel(teams), rules.MinTeams);
 end
 if ismember("Game", lineup.Properties.VariableNames)
-    nGames = numel(unique(string(lineup.Game)));
+    [games, ~, gi] = unique(string(lineup.Game));
+    nGames = numel(games);
     if nGames < rules.MinGames
         problems(end+1) = sprintf("Lineup spans %d games, needs %d.", nGames, rules.MinGames);
+    end
+    perGame = accumarray(gi, 1);
+    if any(perGame > opts.MaxFromGame)
+        over = games(perGame > opts.MaxFromGame);
+        problems(end+1) = sprintf("More than %d players from game %s.", opts.MaxFromGame, join(over, ", "));
     end
 end
 

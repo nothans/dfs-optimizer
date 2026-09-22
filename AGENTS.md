@@ -33,7 +33,7 @@ Lineups come from `intlinprog` through the problem-based Optimization Toolbox in
 % from the repo root
 players = dfs.loadProjections("data/sample_DFF_NFL.csv");
 [lineup, info] = dfs.optimizeLineup(players, StackSize=1, AvoidQBvsDST=true);
-runtests("tests")          % 22 tests, about a minute
+runtests("tests")          % 23 tests, about a minute
 DFSOptimizerApp            % the explorer
 ```
 
@@ -64,7 +64,7 @@ Install these skill groups from the MATLAB Agentic Toolkit (fewer is better; age
 ## Prompts that work
 
 - "Load `data/sample_DFF_NFL.csv`, build 20 DraftKings GPP lineups with a 2-man stack and 40% max exposure, and tell me the five players where my exposure is furthest above projected ownership."
-- "Add a `MaxFromGame` option to `dfs.optimizeLineup` that caps players from one game, with a validator clause and a test. Use the same indicator-matrix pattern as `MaxPerTeam`."
+- "Add a `MaxFromPosition` style option to `dfs.optimizeLineup` (for example, cap salary spent on RBs), with a validator clause and a test. Use the same indicator-matrix pattern as `MaxPerTeam` and `MaxFromGame`."
 - "Compare the cash lineup and the GPP lineup on the sample slate and explain, in points and ownership, what the stack costs."
 - "Run 200 Monte Carlo draws with lognormal volatility and list players who are optimal in over 30% of draws but projected under 10% ownership."
 - "The optimizer says infeasible with my locks. Diagnose which constraint conflicts and propose the smallest change."

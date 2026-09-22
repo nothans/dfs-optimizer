@@ -176,6 +176,22 @@ classdef tDfsOptimizer < matlab.unittest.TestCase
             tc.verifyEqual(numel(unique(L1.Game)), 1);
         end
 
+        function maxFromGameCapsAGame(tc)
+            % Push one game's players to the top, then cap that game at 3.
+            P = tc.Players;
+            g = P.Game(1);
+            boosted = P;
+            boosted.Projection(boosted.Game == g) = boosted.Projection(boosted.Game == g) + 100;
+            [L0, ~] = dfs.optimizeLineup(boosted);
+            tc.verifyGreaterThan(sum(L0.Game == g), 3);
+            [L, ~] = dfs.optimizeLineup(boosted, MaxFromGame=3);
+            tc.verifyEqual(sum(L.Game == g), 3);
+            [ok, problems] = dfs.validateLineup(L0, "DraftKings", MaxFromGame=3);
+            tc.verifyFalse(ok);
+            tc.verifyTrue(any(contains(problems, "from game")));
+            tc.verifyError(@() dfs.optimizeLineup(P, MaxFromGame=2.5), "dfs:badOption");
+        end
+
         function ownershipLeverageAndCap(tc)
             P = tc.Players;
             [~, base] = dfs.optimizeLineup(P);
